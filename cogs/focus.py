@@ -1,63 +1,96 @@
 import discord
 from discord.ext import commands
 import asyncio
+from typing import Set
+
 
 class FocusCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        # Diccionario sugerido (opcional) para guardar quién está en focus y evitar que usen el comando dos veces a la vez.
-        # self.active_sessions = {}
+    """Cog that implements a Pomodoro-style focus timer.
 
-    # Comando !focus que recibe la cantidad de minutos
-    @commands.command(name="focus", help="Inicia un temporizador Pomodoro para el trabajo profundo. Uso: !focus [minutos]")
-    async def focus(self, ctx, minutos: int):
-        # Validación básica: asegurarse de que el tiempo sea positivo
-        if minutos <= 0:
-            await ctx.send("Por favor, ingresa una cantidad de minutos válida (mayor a 0).")
+    Responsibilities:
+    - Provide the `!focus [minutes]` command.
+    - Assign the role "En la Zona 🎧" to the invoking user for the duration.
+    - Use `asyncio.sleep()` so only this coroutine is paused (does not block the bot).
+    - Remove the role and DM the user when the timer ends.
+    """
+
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        # Track active focus sessions by user ID to prevent duplicates.
+        self.active_sessions: Set[int] = set()
+
+    @commands.command(name="focus", help="Start a Pomodoro-style focus timer. Usage: !focus [minutes]")
+    async def focus(self, ctx: commands.Context, minutes: int):
+        """Start a focus timer for `minutes` minutes.
+
+        Steps:
+        1. Validate input.
+        2. Ensure the role `En la Zona 🎧` exists (create if possible).
+        3. Assign the role to the invoking user.
+        4. Await `asyncio.sleep(minutes * 60)` to pause this coroutine asynchronously.
+        5. Remove the role and DM the user when finished.
+        """
+
+        # Basic validation: positive integer
+        if minutes <= 0:
+            await ctx.send("Please provide a positive number of minutes (greater than 0).")
             return
 
-        role_name = "En la Zona "
-        # Busca en los roles del servidor si ya existe el rol "En la Zona "
+        user_id = ctx.author.id
+
+        # Prevent the same user from starting multiple concurrent focus sessions
+        if user_id in self.active_sessions:
+            await ctx.send(f"{ctx.author.mention}, you already have an active focus session.")
+            return
+
+        role_name = "En la Zona 🎧"
+
+        # Find role by exact name
         role = discord.utils.get(ctx.guild.roles, name=role_name)
 
-        # Si no lo encuentra, el bot intenta crearlo automáticamente. 
-        # (Esto ahorra trabajo manual al Integrante 1 / Arquitecto)
+        # If the role does not exist, attempt to create it.
         if not role:
             try:
-                role = await ctx.guild.create_role(name=role_name, reason="Rol automático para el temporizador de focus")
+                role = await ctx.guild.create_role(name=role_name, reason="Automatic role for focus timer")
             except discord.Forbidden:
-                # Si el bot no tiene permisos de Administrador/Gestionar Roles, avisa.
-                await ctx.send("No tengo permisos para crear roles en este servidor. Por favor, crea el rol 'En la Zona' manualmente y dame permisos.")
+                await ctx.send("I don't have permission to create roles. Please create the role 'En la Zona 🎧' and ensure I can manage it.")
                 return
 
-        # Asignar el rol al usuario que ejecutó el comando
+        # Try to assign the role to the user
         try:
             await ctx.author.add_roles(role)
-            await ctx.send(f"¡{ctx.author.mention} ha entrado en 'La Zona' por {minutos} minutos! Por favor, no molestar.")
         except discord.Forbidden:
-            # Si el rol del bot está por debajo del rol que intenta asignar, fallará.
-            await ctx.send("No tengo permisos para asignar roles. Asegúrate de que mi rol esté por encima del rol 'En la Zona'.")
+            await ctx.send("I don't have permission to assign roles. Make sure my role is above 'En la Zona 🎧' in the role hierarchy.")
             return
 
-        # --- EL CORAZÓN DE ESTE ROL (Integrante 3): asyncio.sleep() ---
-        # Esto pausa SOLO esta función específica de forma asíncrona por X minutos.
-        # Gracias a esto, el bot NO se congela y puede seguir respondiendo a otros usuarios.
-        await asyncio.sleep(minutos * 60)
+        # Mark session active before sleeping to avoid races
+        self.active_sessions.add(user_id)
 
-        # Una vez que pasa el tiempo, intentamos quitarle el rol al usuario
+        # Notify in the channel (brief confirmation)
+        await ctx.send(f"{ctx.author.mention} has entered 'En la Zona 🎧' for {minutes} minutes. Stay focused!")
+
         try:
-            await ctx.author.remove_roles(role)
-        except discord.Forbidden:
-            pass # Ignoramos el error si no se pudo quitar (ya se habría quejado antes)
+            # Pause this coroutine asynchronously for the requested duration
+            await asyncio.sleep(minutes * 60)
 
-        # Finalmente, enviamos un Mensaje Directo (DM) al usuario avisando que terminó.
-        try:
-            await ctx.author.send(f"¡Tu sesión de enfoque de {minutos} minutos ha finalizado! Excelente trabajo. ")
-        except discord.Forbidden:
-            # Es muy común que los usuarios tengan cerrados los DMs para bots en Discord. 
-            # En ese caso, dejamos un mensaje en el mismo canal como respaldo.
-            await ctx.send(f"{ctx.author.mention}, tu tiempo de enfoque ha terminado (no pude enviarte un mensaje privado). ")
+            # Attempt to remove the role when the timer completes
+            try:
+                await ctx.author.remove_roles(role)
+            except discord.Forbidden:
+                # If removal fails because of permissions, ignore silently.
+                pass
 
-# Función estándar para cargar este archivo como una extensión (Cog) en el bot
-async def setup(bot):
+            # Try to DM the user to notify completion
+            try:
+                await ctx.author.send(f"Your {minutes}-minute focus session has ended. Great job!")
+            except discord.Forbidden:
+                # Common case: user has DMs closed for bots. Fallback to channel mention.
+                await ctx.send(f"{ctx.author.mention}, your focus time has ended (could not send DM).")
+
+        finally:
+            # Ensure we always clear the active session flag, even on errors
+            self.active_sessions.discard(user_id)
+
+
+async def setup(bot: commands.Bot):
     await bot.add_cog(FocusCog(bot))
