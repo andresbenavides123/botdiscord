@@ -48,7 +48,7 @@ Actualmente, los cimientos del bot están listos. El **Arquitecto Core & DevOps*
 - **Arquitecto Core & DevOps:** Encargado de los cimientos y el despliegue.
 - **Data Master:** ✅ (Completado) Gestión de bitácoras y bases de datos (`!daily`).
 - **Time Keeper:** (En desarrollo) Gestión de tiempos y modo enfoque.
-- **Support Engineer:** (En desarrollo) Comandos de ayuda y soporte técnico.
+- **Support Engineer:** ✅ (Completado) Comandos de ayuda y soporte técnico.
 
 # SyncBot - Modulo Time Keeper
 
@@ -105,3 +105,27 @@ Por favor, siga estas indicaciones antes de desplegar o probar el módulo **Time
 - **Resiliencia y mejoras sugeridas:** Actualmente las sesiones activas se mantienen en memoria; si el bot se reinicia durante una sesión, esta información se pierde. Para mayor robustez, considere persistir sesiones en `db/`.
 
 Si todo está correcto, ya se han subido los cambios al branch `main`. Si desea, puedo crear un archivo adicional con instrucciones específicas para el administrador del servidor o abrir un Pull Request con una descripción formal de los cambios.
+
+# SyncBot - Módulo Support Engineer
+
+Este repositorio incluye la implementación del módulo de soporte "Support Engineer" (Integrante 4) para SyncBot.
+
+## Estado Actual del Proyecto
+
+El Support Engineer ha completado el desarrollo del panel de ayuda y el botón de pánico para Pair Programming.
+
+- [x] **Panel de Ayuda (`!help`):** Reemplazo del comando `help` por defecto por un panel personalizado (Embed) con instrucciones claras.
+- [x] **Botón de Pánico (`!sos`):** Comando `!sos [problema]` que notifica a los miembros disponibles del equipo.
+- [x] **Filtro de Disponibilidad:** Integración inteligente que omite notificar a usuarios con el rol "En la Zona 🎧" (respetando al Time Keeper).
+- [x] **Buenas Prácticas:** Código estructurado en inglés, comentarios en inglés y UI/textos en español.
+
+## Estructura de Archivos (Integrante 4)
+
+- `cogs/help.py`: Archivo principal del Integrante 4. Contiene la clase `SupportCog` con los comandos `help` y `sos`.
+
+## Cómo probar el módulo de Soporte
+
+1. **Comando Help:**
+   - Escribe `!help` en cualquier canal para ver la lista de comandos disponibles.
+2. **Comando SOS:**
+   - Escribe `!sos Error en el servidor` en cualquier canal para pedir ayuda. El bot notificará a quienes no estén concentrados.
