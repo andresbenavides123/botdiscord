@@ -1,0 +1,8 @@
+# Dependencias principales
+discord.py==2.3.2
+python-dotenv==1.0.1
+aiosqlite==0.20.0
+
+# Herramientas de desarrollo y linting recomendadas para el equipo
+black==24.4.2
+flake8==7.0.0
