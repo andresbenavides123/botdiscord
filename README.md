@@ -12,6 +12,14 @@ Actualmente, los cimientos del bot están listos. El **Arquitecto Core & DevOps*
 - [x] **Despliegue:** Archivos `requirements.txt` y `Procfile` listos para el despliegue en la nube (Railway).
 - [x] **Gestión de Versiones:** Repositorio Git inicializado y sincronizado con GitHub.
 
+### 📊 Desarrollo de Módulos (Cogs)
+
+**El Data Master** ha completado su reto del Stand-up asíncrono:
+- [x] **Base de Datos (`db/database.py`):** Configuración de SQLite creando la tabla `standups` que guarda: Usuario, Tarea de hoy, y Fecha.
+- [x] **Comando `!daily` (`cogs/standup.py`):** El bot recibe reportes diarios mediante `!daily [texto]`.
+- [x] **Limpieza:** El bot borra el mensaje original del usuario para mantener el chat ordenado.
+- [x] **Embeds y Canal `#bitacora`:** El bot genera un mensaje con formato bonito (Embed color verde y avatar) y lo envía automáticamente al canal específico `#bitacora`.
+
 ## 📂 Estructura de Archivos
 
 - `main.py`: El corazón del bot. Maneja la conexión y carga los módulos.
@@ -36,7 +44,7 @@ Actualmente, los cimientos del bot están listos. El **Arquitecto Core & DevOps*
 
 ## 👥 Equipo de Desarrollo
 - **Arquitecto Core & DevOps:** Encargado de los cimientos y el despliegue.
-- **Data Master:** (En desarrollo) Gestión de bitácoras y bases de datos.
+- **Data Master:** ✅ (Completado) Gestión de bitácoras y bases de datos (`!daily`).
 - **Time Keeper:** (En desarrollo) Gestión de tiempos y modo enfoque.
 - **Support Engineer:** (En desarrollo) Comandos de ayuda y soporte técnico.
 
