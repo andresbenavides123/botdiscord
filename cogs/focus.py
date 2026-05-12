@@ -36,6 +36,20 @@ class FocusCog(commands.Cog):
             await ctx.send("Please provide a positive number of minutes (greater than 0).")
             return
 
+        # Ensure this command is used in a guild (server), not in a DM
+        if ctx.guild is None:
+            await ctx.send("This command can only be used in a server (not in DMs).")
+            return
+
+        # Quick permission checks for the bot: manage_roles is required to assign/remove the role
+        bot_member = ctx.guild.me
+        if bot_member is None:
+            bot_member = ctx.guild.get_member(self.bot.user.id)
+
+        if bot_member and not bot_member.guild_permissions.manage_roles:
+            await ctx.send("I need the 'Manage Roles' permission to assign the 'En la Zona 🎧' role. Please grant it and try again.")
+            return
+
         user_id = ctx.author.id
 
         # Prevent the same user from starting multiple concurrent focus sessions
@@ -55,6 +69,11 @@ class FocusCog(commands.Cog):
             except discord.Forbidden:
                 await ctx.send("I don't have permission to create roles. Please create the role 'En la Zona 🎧' and ensure I can manage it.")
                 return
+
+        # Check role hierarchy: bot's top role must be higher than the role we want to assign
+        if bot_member and role and bot_member.top_role <= role:
+            await ctx.send("My role must be above 'En la Zona 🎧' in the role hierarchy to assign it. Please adjust my role position.")
+            return
 
         # Try to assign the role to the user
         try:
