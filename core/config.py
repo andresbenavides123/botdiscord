@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    \"\"\"
+    """
     Clase centralizada para manejar la configuración del bot.
     Esto permite tener todas las variables de entorno validadas en un solo lugar.
-    \"\"\"
+    """
     
     # Token principal del bot (requerido)
     DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")

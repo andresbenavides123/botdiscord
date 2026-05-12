@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-class SupportCog(commands.Cog):
+class HelpCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -76,5 +76,8 @@ class SupportCog(commands.Cog):
 
 async def setup(bot):
     # Remove the default help command to use our custom one
-    bot.remove_command("help")
-    await bot.add_cog(SupportCog(bot))
+    try:
+        bot.remove_command("help")
+    except:
+        pass
+    await bot.add_cog(HelpCog(bot))
