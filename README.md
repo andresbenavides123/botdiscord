@@ -15,6 +15,7 @@ Actualmente, los cimientos del bot están listos. El **Arquitecto Core & DevOps*
 ### 📊 Desarrollo de Módulos (Cogs)
 
 **El Data Master** ha completado su reto del Stand-up asíncrono:
+
 - [x] **Base de Datos (`db/database.py`):** Configuración de SQLite creando la tabla `standups` que guarda: Usuario, Tarea de hoy, y Fecha.
 - [x] **Comando `!daily` (`cogs/standup.py`):** El bot recibe reportes diarios mediante `!daily [texto]`.
 - [x] **Limpieza:** El bot borra el mensaje original del usuario para mantener el chat ordenado.
@@ -43,6 +44,7 @@ Actualmente, los cimientos del bot están listos. El **Arquitecto Core & DevOps*
    ```
 
 ## 👥 Equipo de Desarrollo
+
 - **Arquitecto Core & DevOps:** Encargado de los cimientos y el despliegue.
 - **Data Master:** ✅ (Completado) Gestión de bitácoras y bases de datos (`!daily`).
 - **Time Keeper:** (En desarrollo) Gestión de tiempos y modo enfoque.
@@ -82,6 +84,24 @@ El Time Keeper ha completado el desarrollo del sistema Pomodoro para trabajo pro
    - Escribe `!focus 25` en cualquier canal para iniciar un Pomodoro de 25 minutos.
 
 ## Responsabilidades del Integrante 3 (Time Keeper)
+
 - Crear el sistema de tareas asincronas para el trabajo profundo.
 - Manipular los permisos y roles de los usuarios en el servidor en tiempo real.
 - Gestionar las notificaciones por DM a los usuarios.
+
+## Nota profesional para despliegue y permisos
+
+Por favor, siga estas indicaciones antes de desplegar o probar el módulo **Time Keeper** en un servidor de producción:
+
+- **Permisos mínimos requeridos para el bot:** `Manage Roles`, `Send Messages`, `Read Message History`, `View Channels`. Si el bot borra mensajes (funcionalidad `!daily`), también necesitará `Manage Messages`.
+- **Posición del rol del bot:** Asegúrese de que el rol del bot esté por encima del rol `En la Zona 🎧` en la jerarquía de roles del servidor para que pueda asignarlo y retirarlo correctamente.
+- **Seguridad del token:** Use el archivo `.env` para la variable `DISCORD_TOKEN`. Nunca suba su token a repositorios públicos.
+- **Pruebas recomendadas:**
+  1.  Crear un servidor de pruebas y otorgar al bot los permisos arriba mencionados.
+
+2.  Ejecutar `!focus 1` y verificar que el rol `En la Zona 🎧` se crea (si no existe), se asigna y se retira tras 1 minuto.
+3.  Comprobar que el usuario recibe un DM al finalizar (y que existe el fallback al canal si el DM falla).
+
+- **Resiliencia y mejoras sugeridas:** Actualmente las sesiones activas se mantienen en memoria; si el bot se reinicia durante una sesión, esta información se pierde. Para mayor robustez, considere persistir sesiones en `db/`.
+
+Si todo está correcto, ya se han subido los cambios al branch `main`. Si desea, puedo crear un archivo adicional con instrucciones específicas para el administrador del servidor o abrir un Pull Request con una descripción formal de los cambios.
