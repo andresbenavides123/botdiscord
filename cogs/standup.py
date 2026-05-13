@@ -2,7 +2,11 @@ import discord
 from discord.ext import commands
 import logging
 
-from db.database import add_standup, add_bot_log
+from db.database import (
+    add_standup,
+    add_bot_log,
+    count_standups_by_user
+)
 
 logger = logging.getLogger("SyncBot.Standup")
 
@@ -107,6 +111,56 @@ class StandupCog(commands.Cog):
             await ctx.send(
                 "⚠️ Canal `#bitacora` no encontrado. Mostrando reporte aquí:",
                 embed=embed
+            )
+
+    @commands.command(name="mystandups")
+    async def my_standups(self, ctx: commands.Context):
+        """
+        Muestra cuántos reportes diarios ha registrado el usuario.
+
+        Uso:
+        !mystandups
+        """
+        try:
+            total = await count_standups_by_user(ctx.author.id)
+
+            embed = discord.Embed(
+                title="📊 Mis Reportes Diarios",
+                description=(
+                    f"**{ctx.author.display_name}** ha registrado "
+                    f"**{total}** reportes diarios."
+                ),
+                color=discord.Color.blue()
+            )
+
+            if total == 0:
+                message = "Aún no has registrado ningún reporte."
+            elif total < 5:
+                message = "Buen comienzo. Sigue reportando tu progreso."
+            elif total < 15:
+                message = "Excelente disciplina y constancia."
+            else:
+                message = "¡Impresionante! Eres un ejemplo para el equipo."
+
+            embed.add_field(
+                name="🏆 Progreso",
+                value=message,
+                inline=False
+            )
+
+            embed.set_footer(text="SyncBot • Estadísticas Personales")
+
+            if ctx.author.display_avatar:
+                embed.set_thumbnail(url=ctx.author.display_avatar.url)
+
+            await ctx.send(embed=embed)
+
+        except Exception as error:
+            logger.error(
+                f"Error al consultar los reportes del usuario: {error}"
+            )
+            await ctx.send(
+                "❌ Ocurrió un error al consultar tus reportes diarios."
             )
 
 
